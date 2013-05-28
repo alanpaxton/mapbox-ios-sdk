@@ -405,16 +405,20 @@
 
 + (UIImage *)resourceImageNamed:(NSString *)imageName
 {
-    NSAssert([[NSBundle mainBundle] pathForResource:@"MapBox" ofType:@"bundle"], @"Resource bundle not found in application.");
-
     if ( ! [[imageName pathExtension] length])
         imageName = [imageName stringByAppendingString:@".png"];
 
-    NSString *bundlePath = [[NSBundle mainBundle] pathForResource:@"MapBox" ofType:@"bundle"];
-    NSBundle *resourcesBundle = [NSBundle bundleWithPath:bundlePath];
-    NSString *imagePath = [resourcesBundle pathForResource:imageName ofType:nil];
+    return [UIImage imageWithContentsOfFile:[[self class] pathForBundleResourceNamed:imageName ofType:nil]];
+}
 
-    return [UIImage imageWithContentsOfFile:imagePath];
++ (NSString *)pathForBundleResourceNamed:(NSString *)name ofType:(NSString *)extension
+{
+    NSAssert([[NSBundle mainBundle] pathForResource:@"MapBox" ofType:@"bundle"], @"Resource bundle not found in application.");
+
+    NSString *bundlePath      = [[NSBundle mainBundle] pathForResource:@"MapBox" ofType:@"bundle"];
+    NSBundle *resourcesBundle = [NSBundle bundleWithPath:bundlePath];
+
+    return [resourcesBundle pathForResource:name ofType:extension];
 }
 
 - (void)dealloc
@@ -585,7 +589,10 @@
 
 - (void)completeMoveEventAfterDelay:(NSTimeInterval)delay
 {
-    [_moveDelegateQueue performSelector:@selector(setSuspended:) withObject:[NSNumber numberWithBool:NO] afterDelay:delay];
+    if ( ! delay)
+        [_moveDelegateQueue setSuspended:NO];
+    else
+        [_moveDelegateQueue performSelector:@selector(setSuspended:) withObject:[NSNumber numberWithBool:NO] afterDelay:delay];
 }
 
 - (void)registerZoomEventByUser:(BOOL)wasUserEvent
@@ -621,7 +628,10 @@
 
 - (void)completeZoomEventAfterDelay:(NSTimeInterval)delay
 {
-    [_zoomDelegateQueue performSelector:@selector(setSuspended:) withObject:[NSNumber numberWithBool:NO] afterDelay:delay];
+    if ( ! delay)
+        [_zoomDelegateQueue setSuspended:NO];
+    else
+        [_zoomDelegateQueue performSelector:@selector(setSuspended:) withObject:[NSNumber numberWithBool:NO] afterDelay:delay];
 }
 
 #pragma mark -
@@ -2924,12 +2934,11 @@
     {
         [_annotations removeObject:annotation];
         [_visibleAnnotations removeObject:annotation];
+        [self.quadTree removeAnnotation:annotation];
+        annotation.layer = nil;
     }
 
-    [self.quadTree removeAnnotation:annotation];
-
-    // Remove the layer from the screen
-    annotation.layer = nil;
+    [self correctPositionOfAllAnnotations];
 }
 
 - (void)removeAnnotations:(NSArray *)annotationsToRemove
