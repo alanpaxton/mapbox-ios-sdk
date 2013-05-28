@@ -35,7 +35,7 @@
         return nil;
 
     self.minZoom = 1;
-    self.maxZoom = 15;
+    self.maxZoom = 18;
 
 	return self;
 } 
@@ -61,7 +61,7 @@
 
 - (NSString *)longDescription
 {
-	return @"Open Cycle Map, the free wiki world map, provides freely usable map data for all parts of the world, under the Creative Commons Attribution-Share Alike 2.0 license.";
+    return @"OpenCycleMap, a worldwide map for cyclists based on OpenStreetMap data, available under the Creative Commons Attribution-Share Alike 2.0 license.";
 }
 
 - (NSString *)shortAttribution
